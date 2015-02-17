@@ -8,5 +8,6 @@ build() {
   docker run --name "$CONTAINER_NAME" middleman
   docker cp "$CONTAINER_NAME":/usr/src/app/build.tar.gz .
   docker build -f Dockerfile.site -t site-container .
+  rm build.tar.gz
   docker rm "$CONTAINER_NAME"
 }

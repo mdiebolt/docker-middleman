@@ -1,2 +1,0 @@
-export DO_ACCESS_KEY_ID=prod-access-key
-export CONTAINER_NAME=built-site

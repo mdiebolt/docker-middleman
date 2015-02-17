@@ -1,0 +1,4 @@
+source .gun_global
+
+export PROVISION_HOOK="do-provision"
+export DO_ACCESS_KEY_ID=prod-access-key
