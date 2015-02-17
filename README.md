@@ -24,7 +24,7 @@ Build self contained static sites for simple high-availability deployment to maj
   - Number of hosts to provision
 1. Use GliderGun to provision hosts on configured hosting providers
   - ⚡ `gun build` # Build middleman container, export artifact, build nginx container
-  - `gun do provision` # provisions hosts on Digital Ocean
+  - ⚡ `gun do provision` # provisions hosts on Digital Ocean
   - `gun do deploy`
-  - `gun do list`
-  - `gun do destroy`
+  - ⚡ `gun do list`
+  - ⚡ `gun do destroy`

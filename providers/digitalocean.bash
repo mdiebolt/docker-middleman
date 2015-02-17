@@ -1,11 +1,40 @@
+# TODO: add desc for all functions
+# TODO: make digitalocean helper take arbitrary verbs
 init() {
   env-import TOKEN
+  env-import CLUSTER_NAME
+  env-import DIGITALOCEAN_SSH_KEY
   cmd-export "digitalocean-list" "list"
   cmd-export "digitalocean-images" "images"
   cmd-export "digitalocean-ssh-keys" "ssh-keys"
+  cmd-export "digitalocean-destroy" "destroy"
+  cmd-export "digitalocean-provision" "provision"
 }
 
+# FROM HOOKS
 digitalocean-provision() {
+  desc="Spin up cluster of droplets"
+  declare count="$1" name="${2:-$CLUSTER_NAME}" ssh_keys="${3:-$DIGITALOCEAN_SSH_KEY}"
+
+  : "${count:?}"
+
+  for i in $(seq 1 $count); do
+    digitalocean-create-droplet "$name-$i" "$ssh_keys"
+  done
+}
+
+digitalocean-destroy() {
+  local running_instances
+  running_instances="$(digitalocean-list | jq -r ".[] | select(.name | startswith(\"$CLUSTER_NAME\")) | .id")"
+
+  for id in $running_instances; do
+    digitalocean-delete-droplet "$id"
+  done
+}
+#
+
+# TODO: pretty print output
+digitalocean-create-droplet() {
   desc="Spin up a new digital ocean host"
   declare name="$1" ssh_keys="$2" image="${3:-docker}"
 
@@ -15,6 +44,16 @@ digitalocean-provision() {
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $TOKEN" \
     -d "{\"name\":\"$name\",\"region\":\"nyc3\",\"size\":\"512mb\",\"image\":\"$image\",\"ssh_keys\":[$ssh_keys],\"backups\":false,\"ipv6\":true,\"user_data\":null,\"private_networking\":null}" "https://api.digitalocean.com/v2/droplets"
+}
+
+digitalocean-delete-droplet() {
+  declare droplet_id="$1"
+
+  : "${droplet_id:?}"
+
+  curl -X DELETE \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets/$droplet_id"
 }
 
 # TODO: fuzzy matching for droplet names
@@ -44,7 +83,7 @@ digitalocean-get() {
 }
 
 digitalocean-format-list() {
-  jq '[.droplets[] as $droplet | {
+  jq '[.droplets[] as $droplet | select($droplet.status == "active") | {
     id: $droplet.id,
     name: $droplet.name,
     ip_address: $droplet.networks.v4[] | select(.type == "public") | .ip_address }]'
