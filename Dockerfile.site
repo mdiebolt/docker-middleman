@@ -2,8 +2,7 @@ FROM gliderlabs/alpine:3.1
 
 ENV HOST_NAME middleman
 
-# use nginx-lua to be able to assign server_name with env variable
-RUN apk-install nginx-lua \
+RUN apk-install nginx \
   && mkdir -p /tmp/nginx
 
 EXPOSE 8000

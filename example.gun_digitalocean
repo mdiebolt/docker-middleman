@@ -1,4 +1,6 @@
 source .gun_global
 
-export PROVISION_HOOK="do-provision"
-export DO_ACCESS_KEY_ID=prod-access-key
+export TOKEN=digital-ocean-token
+export DIGITALOCEAN_SSH_KEY=digital-ocean-ssh-key-id
+
+module-load providers/digitalocean.bash

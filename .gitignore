@@ -10,3 +10,4 @@ build
 build.tar.gz
 
 .gun_*
+*.tar.gz
