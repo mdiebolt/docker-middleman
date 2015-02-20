@@ -1,0 +1,4 @@
+export CONTAINER_NAME=built-site
+export CLUSTER_NAME=static-site
+export BUILT_SITE=site-container
+export SSH_USER=root

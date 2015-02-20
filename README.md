@@ -28,3 +28,9 @@ Build self contained static sites for simple high-availability deployment to maj
   - `gun do deploy`
   - ⚡ `gun do list`
   - ⚡ `gun do destroy`
+
+## Blog
+
+1. Ship nginx container with built site artifact
+1. Using static site builders, exporting the built site for consumption by nginx image
+1. Provide GoBasher deployment binary
