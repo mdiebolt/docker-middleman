@@ -4,6 +4,7 @@ init() {
 }
 
 build() {
+  desc="Builds static site alongside an nginx server"
   docker build -t middleman .
   docker run --name "$CONTAINER_NAME" middleman
   docker cp "$CONTAINER_NAME":/usr/src/app/build.tar.gz .

@@ -1,9 +1,8 @@
-# TODO: add desc for all functions
-# TODO: make digitalocean helper take arbitrary verbs
 init() {
   env-import TOKEN
   env-import CLUSTER_NAME
   env-import DIGITALOCEAN_SSH_KEY
+
   cmd-export "digitalocean-list" "list"
   cmd-export "digitalocean-images" "images"
   cmd-export "digitalocean-ssh-keys" "ssh-keys"
@@ -23,6 +22,7 @@ digitalocean-provision() {
 }
 
 digitalocean-destroy() {
+  desc="Destroy all droplets in your static site cluster"
   local running_instances
   running_instances="$(digitalocean-list | jq -r ".[] | select(.name | startswith(\"$CLUSTER_NAME\")) | .id")"
 
@@ -31,39 +31,39 @@ digitalocean-destroy() {
   done
 }
 
-# TODO: pretty print output
 digitalocean-create-droplet() {
   desc="Spin up a new digital ocean host"
   declare name="$1" ssh_keys="$2" image="${3:-docker}"
 
   : "${name:?}" "${ssh_keys:?}"
 
-  curl -X POST \
+  curl -s \
+    -X POST \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $TOKEN" \
-    -d "{\"name\":\"$name\",\"region\":\"nyc3\",\"size\":\"512mb\",\"image\":\"$image\",\"ssh_keys\":[$ssh_keys],\"backups\":false,\"ipv6\":true,\"user_data\":null,\"private_networking\":null}" "https://api.digitalocean.com/v2/droplets"
+    -d "{\"name\":\"$name\",\"region\":\"nyc3\",\"size\":\"512mb\",\"image\":\"$image\",\"ssh_keys\":[$ssh_keys],\"backups\":false,\"ipv6\":true,\"user_data\":null,\"private_networking\":null}" "https://api.digitalocean.com/v2/droplets" \
+    | jq .
 }
 
 digitalocean-delete-droplet() {
+  desc="Delete droplet by id"
   declare droplet_id="$1"
 
   : "${droplet_id:?}"
 
-  curl -X DELETE \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/droplets/$droplet_id"
+  digitalocean-api "DELETE" "droplets/$droplet_id"
 }
 
-# TODO: fuzzy matching for droplet names
 digitalocean-list() {
-  digitalocean-get "droplets" | digitalocean-format-list
+  desc="List active droplets"
+  digitalocean-api "GET" "droplets" | digitalocean-format-list
 }
 
 digitalocean-images() {
   desc="Look up different types of images"
   declare type="${1-distribution}"
 
-  digitalocean-get "images?type=$type" | digitalocean-format-images
+  digitalocean-api "GET" "images?type=$type" | digitalocean-format-images
 }
 
 digitalocean-ips() {
@@ -72,15 +72,18 @@ digitalocean-ips() {
 }
 
 digitalocean-ssh-keys() {
-  digitalocean-get "account/keys" | digitalocean-format-ssh-keys
+  desc="List authorized ssh keys and their ids"
+  digitalocean-api "GET" "account/keys" | digitalocean-format-ssh-keys
 }
 
-digitalocean-get() {
-  declare action="$1"
-  : "${action:?}"
+digitalocean-api() {
+  desc="Helper function to DRY up calls to digital ocean APIs"
+  declare verb="$1" action="$2"
+
+  : "${verb:?}" "${action:?}"
 
   curl -s \
-    -X GET \
+    -X "$verb" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/$action"
 }
