@@ -11,7 +11,6 @@ init() {
   cmd-export "digitalocean-provision" "provision"
 }
 
-# FROM HOOKS
 digitalocean-provision() {
   desc="Spin up cluster of droplets"
   declare count="$1" name="${2:-$CLUSTER_NAME}" ssh_keys="${3:-$DIGITALOCEAN_SSH_KEY}"
@@ -31,7 +30,6 @@ digitalocean-destroy() {
     digitalocean-delete-droplet "$id"
   done
 }
-#
 
 # TODO: pretty print output
 digitalocean-create-droplet() {
@@ -68,6 +66,11 @@ digitalocean-images() {
   digitalocean-get "images?type=$type" | digitalocean-format-images
 }
 
+digitalocean-ips() {
+  desc="Look up image IPs"
+  digitalocean-list | digitalocean-format-ips
+}
+
 digitalocean-ssh-keys() {
   digitalocean-get "account/keys" | digitalocean-format-ssh-keys
 }
@@ -80,6 +83,10 @@ digitalocean-get() {
     -X GET \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $TOKEN" "https://api.digitalocean.com/v2/$action"
+}
+
+digitalocean-format-ips() {
+  jq -r '.[] | .ip_address'
 }
 
 digitalocean-format-list() {
